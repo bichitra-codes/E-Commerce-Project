@@ -1,0 +1,11 @@
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+@Service
+public class MyUserDetailsService implements UserDetailsService {
+
+    private final PasswordEncoder passwordEncoder;
+
+    public MyUserDetailsService(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
+}

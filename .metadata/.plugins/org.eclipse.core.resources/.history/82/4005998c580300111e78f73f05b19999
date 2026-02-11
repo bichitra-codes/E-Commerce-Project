@@ -1,0 +1,19 @@
+// java
+package com.customer.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+record RegisterRequest(String customerName, String customerEmail, String password, String phoneNo) {}
+
+@RestController
+public class RegisterController {
+
+    @PostMapping("/register")
+    public ResponseEntity<String> register(@RequestBody RegisterRequest req) {
+        // simple test response
+        return ResponseEntity.ok("registered " + req.customerEmail());
+    }
+}

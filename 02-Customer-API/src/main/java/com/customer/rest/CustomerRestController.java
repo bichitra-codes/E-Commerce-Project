@@ -1,0 +1,138 @@
+package com.customer.rest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.customer.dto.CustomerDto;
+import com.customer.dto.ResetPwdDto;
+import com.customer.response.ApiResponse;
+import com.customer.response.AuthResponse;
+import com.customer.service.CustomerService;
+
+@RestController
+public class CustomerRestController {
+	
+	@Autowired
+	private CustomerService customerService;
+	
+	@Autowired
+	private BCryptPasswordEncoder pwdEncoder;
+	
+	@PostMapping("/register")
+	public ResponseEntity<ApiResponse<String>> register (@RequestBody CustomerDto customerDto){
+		
+		ApiResponse<String> response = new ApiResponse<>();
+		
+		Boolean emailUnique = customerService.isEmailUnique(customerDto.getCustomerEmail());
+		
+		if(!emailUnique) {
+			response.setStatus(400);
+			response.setMessage("Error");
+			response.setData("Duplicate Email");
+			
+			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);	
+		}
+		
+		Boolean register = customerService.register(customerDto);
+		
+		if(Boolean.TRUE.equals(register)) {
+			response.setStatus(201);
+			response.setMessage("success");
+			response.setData("Register Successfully");
+			
+			return new ResponseEntity<>(response,HttpStatus.CREATED);
+		}
+		else {
+			response.setStatus(500);
+			response.setMessage("Error");
+			response.setData("Register Failed");
+			
+			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@PostMapping("/auth/login")
+	public ResponseEntity<ApiResponse<AuthResponse>>  login(@RequestBody CustomerDto customerdto) {
+		
+		ApiResponse<AuthResponse> response = new ApiResponse<>();
+		
+		AuthResponse authResp = customerService.login(customerdto);
+		
+		if(authResp != null) {
+			response.setStatus(200);
+			response.setMessage("Success");
+			response.setData(authResp);
+			
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		} 
+		else {
+			response.setStatus(500);
+			response.setMessage("Invalid Crediatinal");
+			response.setData(null);
+			
+			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+		}
+	}
+	
+	@PostMapping("/reset-pwd")
+	public ResponseEntity<ApiResponse<String>> resetPassword(@RequestBody ResetPwdDto pwdDto){
+		
+		ApiResponse<String> response = new ApiResponse<>();
+		
+		CustomerDto customer = customerService.getCustomerByEmail(pwdDto.getCustomerEmail());
+		
+		if( ! pwdEncoder.matches(pwdDto.getCurrentPassword(), customer.getPassword())) {
+			response.setStatus(400);
+			response.setMessage("Failed");
+			response.setData("Current password is incorrect");
+			
+			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+		}
+		
+		Boolean resetPassword = customerService.resetPassword(pwdDto);
+		
+		if(resetPassword != null) {
+			response.setStatus(200);
+			response.setMessage("Sucess");
+			response.setData("Password Updated Successfully");
+			
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		}
+		else {
+			response.setStatus(500);
+			response.setMessage("Failed");
+			response.setData("Password Reset failed");
+			
+			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+		}		
+	}
+	
+	@PostMapping("/forget-pwd/{email}")
+	public ResponseEntity<ApiResponse<String>> forgetPassword(@PathVariable String email) {
+		
+		ApiResponse<String> response = new ApiResponse<>();
+		
+		Boolean status = customerService.forgetpassword(email);
+		
+		if(status) {
+			response.setStatus(200);
+			response.setMessage("success");
+			response.setData("Email sent to reset Password");
+			
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		}
+		else {
+			response.setStatus(400);
+		response.setMessage("Failed");
+		response.setData("No Account Found");
+		
+		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+		}
+	}
+}

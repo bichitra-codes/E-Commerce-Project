@@ -1,0 +1,29 @@
+package com.customer.rest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.customer.dto.CustomerDto;
+import com.customer.response.ApiResponse;
+import com.customer.service.CustomerService;
+
+@RestController
+public class CustomerRestController {
+	
+	@Autowired
+	private CustomerService customerService;
+	
+	@Autowired
+	private BCryptPasswordEncoder pwdEncoder;
+	
+	public ResponseEntity<ApiResponse<String>> register (@RequestBody CustomerDto customerDto){
+		
+		ApiResponse<String> response = new ApiResponse<>();
+		
+		Boolean emailUnique = customerService.isEmailUnique(customerDto.getCustomerEmail());
+	}
+
+}

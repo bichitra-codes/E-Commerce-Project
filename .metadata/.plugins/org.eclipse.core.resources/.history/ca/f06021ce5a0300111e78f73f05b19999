@@ -1,0 +1,37 @@
+
+package com.customer.service;
+
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+
+@Service
+public class MyUserDetailsService implements UserDetailsService {
+
+    private final BCryptPasswordEncoder passwordEncoder;
+
+    public MyUserDetailsService(BCryptPasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        // Replace this with a real repository lookup. This is a simple test user.
+        if (!"test".equals(username)) {
+            throw new UsernameNotFoundException("User not found: " + username);
+        }
+
+        String encoded = passwordEncoder.encode("password");
+        return User.withUsername("test")
+                   .password(encoded)
+                   .authorities(Collections.emptyList())
+                   .build();
+    }
+}
+
+
